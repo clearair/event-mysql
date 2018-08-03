@@ -1,0 +1,6 @@
+mysql:
+  host: "127.0.0.1:3306"
+  username: "root"
+  password: ""
+rabbitmq:
+  url: "amqp://guest:guest@192.168.99.100:32771"

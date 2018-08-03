@@ -5,9 +5,10 @@ import (
 	"github.com/siddontang/go-mysql/canal"
 )
 
-func findUpRow(re *canal.RowsEvent) (map[string]interface{}, map[string]interface{}) {
+func findUpRow(re *canal.RowsEvent) (map[string]interface{}, map[string]interface{}, map[string]interface{}) {
 	row := make(map[string]interface{}, 0)
 	newRow := make(map[string]interface{}, 0)
+	rawRow := make(map[string]interface{}, 0)
 	if re.Action == canal.UpdateAction {
 		for j := 0; j < len(re.Rows); j += 2 {
 			for i := 0; i < len(re.Rows[j]); i ++ {
@@ -15,6 +16,7 @@ func findUpRow(re *canal.RowsEvent) (map[string]interface{}, map[string]interfac
 					// 取出修改的值
 					row[re.Table.Columns[i].Name] = re.Rows[1][i]
 				}
+				rawRow[re.Table.Columns[i].Name] = re.Rows[0][i]
 				// 取出新行
 				newRow[re.Table.Columns[i].Name] = re.Rows[1][i]
 			}
@@ -32,5 +34,10 @@ func findUpRow(re *canal.RowsEvent) (map[string]interface{}, map[string]interfac
 			}
 		}
 	}
-	return row, newRow
+	if re.Action == canal.DeleteAction {
+		for i := 0; i < len(re.Rows); i++ {
+			rawRow[string(i)] = re.Rows[i]
+		}
+	}
+	return row, newRow, rawRow
 }

@@ -1,17 +1,17 @@
 package event_mysql
 
 import (
-	"reflect"
 	"github.com/siddontang/go-mysql/canal"
+	"reflect"
 )
 
-func findUpRow(re *canal.RowsEvent) (map[string]interface{}, map[string]interface{}, map[string]interface{}) {
+func findUpRow(re *canal.RowsEvent) (map[string]interface{}, map[string]interface{}, map[string]interface{}, [][]interface{}) {
 	row := make(map[string]interface{}, 0)
 	newRow := make(map[string]interface{}, 0)
 	rawRow := make(map[string]interface{}, 0)
 	if re.Action == canal.UpdateAction {
 		for j := 0; j < len(re.Rows); j += 2 {
-			for i := 0; i < len(re.Rows[j]); i ++ {
+			for i := 0; i < len(re.Rows[j]); i++ {
 				if !reflect.DeepEqual(re.Rows[j][i], re.Rows[j+1][i]) {
 					// 取出修改的值
 					row[re.Table.Columns[i].Name] = re.Rows[1][i]
@@ -23,7 +23,7 @@ func findUpRow(re *canal.RowsEvent) (map[string]interface{}, map[string]interfac
 		}
 	}
 	if re.Action == canal.InsertAction {
-		for j := 0; j < len(re.Rows); j ++ {
+		for j := 0; j < len(re.Rows); j++ {
 			for i := 0; i < len(re.Rows[j]); i++ {
 				if re.Rows[j][i] != nil {
 					// 取出修改的值
@@ -39,5 +39,15 @@ func findUpRow(re *canal.RowsEvent) (map[string]interface{}, map[string]interfac
 			rawRow[string(i)] = re.Rows[i]
 		}
 	}
-	return row, newRow, rawRow
+
+	primaryKeys := make([][]interface{}, len(re.Rows))
+	for index, row := range re.Rows {
+		pk := make([]interface{}, 0, len(re.Table.PKColumns))
+		for _, pkIndex := range re.Table.PKColumns {
+			pk = append(pk, row[pkIndex])
+		}
+		primaryKeys[index] = pk
+	}
+
+	return row, newRow, rawRow, primaryKeys
 }

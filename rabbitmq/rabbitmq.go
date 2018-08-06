@@ -2,14 +2,14 @@ package rabbitmq
 
 import (
 	"event-mysql/config"
-	"github.com/streadway/amqp"
 	"github.com/siddontang/go-log/log"
+	"github.com/streadway/amqp"
 	"github.com/vmihailenco/msgpack"
 )
 
 type Message struct {
 	Timestamp    int64                  `msgpack:"timestamp"`
-	Action       int8                   `msgpack:"action"`       // 动作 1:新增  2:修改 3:删除 4...
+	Action       string                 `msgpack:"action"`       // 动作 1:新增  2:修改 3:删除 4...
 	Schema       string                 `msgpack:"schema"`       // 数据库
 	Table        string                 `msgpack:"table"`        // 表
 	ChangeFields map[string]interface{} `msgpack:"changeFields"` // 修改字段
@@ -36,7 +36,7 @@ func Init() {
 	}
 }
 
-func Publish(message Message, exchange string, routingKey string) error {
+func Publish(message Message, routingKey string) error {
 	// pack
 	body, err := msgpack.Marshal(&message)
 	if err != nil {
@@ -45,19 +45,19 @@ func Publish(message Message, exchange string, routingKey string) error {
 
 	// publish
 	err = Ch.Publish(
-		exchange,   // exchange
-		routingKey, // routing key
-		false,      // mandatory
-		false,      // immediate
+		"mysql.event", // exchange
+		routingKey,    // routing key
+		false,         // mandatory
+		false,         // immediate
 		amqp.Publishing{
 			ContentType: "text/plain",
 			Body:        body,
 		})
-
+	log.Info("route key:", routingKey)
 	if err != nil {
-		log.Error(err, "[x] Failed to publish a message")
+		log.Error("[x] Failed to publish a message", err, message)
 	} else {
-		log.Infof(" [√] Success to publish a message %s", message)
+		log.Info("[√] Success to publish a message", message)
 	}
 
 	return err

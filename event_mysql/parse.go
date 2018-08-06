@@ -36,14 +36,13 @@ func findUpRow(re *canal.RowsEvent) (map[string]interface{}, map[string]interfac
 		}
 	}
 
-	deteteMap := make(map[string]interface{}, 0)
+	deleteMap := make(map[string]interface{}, 0)
 	if re.Action == canal.DeleteAction {
 		for i := 0; i < len(re.Rows); i++ {
-			for j := 0; j < len(re.Rows[i]); j++  {
-				deteteMap[re.Table.Columns[j].Name] = re.Rows[i][j]
+			for j := 0; j < len(re.Rows[i]); j++ {
+				deleteMap[re.Table.Columns[j].Name] = re.Rows[i][j]
 			}
-			rawRow[strconv.Itoa(i)] = deteteMap
-
+			rawRow[strconv.Itoa(i)] = deleteMap
 		}
 	}
 

@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-func findUpRow(re *canal.RowsEvent) (map[string]interface{}, map[string]interface{}, map[string]interface{}, [][]interface{}) {
+func findUpRow(re *canal.RowsEvent) (map[string]interface{}, map[string]interface{}, map[string]interface{}, map[string]interface{}) {
 	row := make(map[string]interface{}, 0)
 	newRow := make(map[string]interface{}, 0)
 	rawRow := make(map[string]interface{}, 0)
@@ -40,14 +40,21 @@ func findUpRow(re *canal.RowsEvent) (map[string]interface{}, map[string]interfac
 		}
 	}
 
-	primaryKeys := make([][]interface{}, len(re.Rows))
-	for index, row := range re.Rows {
-		pk := make([]interface{}, 0, len(re.Table.PKColumns))
+	// 主键
+	pk := make(map[string]interface{}, len(re.Table.PKColumns))
+	for range re.Rows {
 		for _, pkIndex := range re.Table.PKColumns {
-			pk = append(pk, row[pkIndex])
+			column := re.Table.Columns[pkIndex].Name
+
+			// 新增主键问题修改
+			if re.Action == canal.InsertAction {
+				pk[column] = row[column]
+			} else {
+				pk[column] = rawRow[column]
+			}
+
 		}
-		primaryKeys[index] = pk
 	}
 
-	return row, newRow, rawRow, primaryKeys
+	return row, newRow, rawRow, pk
 }

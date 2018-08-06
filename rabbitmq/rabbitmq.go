@@ -15,7 +15,7 @@ type Message struct {
 	ChangeFields map[string]interface{} `msgpack:"changeFields"` // 修改字段
 	RawRow       map[string]interface{} `msgpack:"rawRow"`       // 原始row
 	Row          map[string]interface{} `msgpack:"row"`          // 现在row
-	PrimaryKeys  [][]interface{}        `msgpack:"primaryKeys"`  // 主键
+	PrimaryKeys  map[string]interface{} `msgpack:"primaryKeys"`  // 主键
 }
 
 var Conn *amqp.Connection
@@ -55,7 +55,7 @@ func Publish(message Message, routingKey string) error {
 		})
 	log.Info("route key:", routingKey)
 	if err != nil {
-		log.Error("[x] Failed to publish a message", err, message)
+		log.Errorf("[x] Failed to publish a message %s", message, err)
 	} else {
 		log.Info("[√] Success to publish a message", message)
 	}

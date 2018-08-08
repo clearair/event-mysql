@@ -14,10 +14,10 @@ import (
 )
 
 type Position struct {
-	Config *canal.Config
-	Canal  *canal.Canal
-	mutex sync.Mutex
-	pos *MysqlPos
+	Config   *canal.Config
+	Canal    *canal.Canal
+	mutex    sync.Mutex
+	pos      *MysqlPos
 	exitChan chan struct{}
 }
 

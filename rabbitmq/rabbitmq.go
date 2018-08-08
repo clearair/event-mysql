@@ -5,6 +5,7 @@ import (
 	"github.com/siddontang/go-log/log"
 	"github.com/streadway/amqp"
 	"github.com/vmihailenco/msgpack"
+	"event-mysql/event_mysql"
 )
 
 type Message struct {
@@ -36,7 +37,7 @@ func Init() {
 	}
 }
 
-func Publish(message Message, routingKey string) error {
+func Publish(h *event_mysql.MyEventHandler, message Message, routingKey string) error {
 	// pack
 	body, err := msgpack.Marshal(&message)
 	if err != nil {
@@ -55,7 +56,8 @@ func Publish(message Message, routingKey string) error {
 		})
 	log.Info("route key:", routingKey)
 	if err != nil {
-		log.Errorf("[x] Failed to publish a message %s", message, err)
+		log.Fatal("[x] Failed to publish a message %s", message, err)
+		//h.OnError("[x] Failed to publish a message %s", message, err)
 	} else {
 		log.Info("[√] Success to publish a message", message)
 	}

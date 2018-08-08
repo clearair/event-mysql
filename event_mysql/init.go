@@ -39,8 +39,13 @@ func (h *MyEventHandler) OnRow(event *canal.RowsEvent) error {
 		Row:          row,
 		PrimaryKeys:  primaryKeys,
 	}
-	rabbitmq.Publish(message, event.Table.Schema+"."+event.Table.Name+"."+event.Action)
+	rabbitmq.Publish(h, message, event.Table.Schema+"."+event.Table.Name+"."+event.Action)
 
+	return nil
+}
+
+func (h *MyEventHandler) OnError(s string, message rabbitmq.Message, err error) error {
+	log.Fatal(s, message, err)
 	return nil
 }
 
@@ -62,7 +67,8 @@ func Init() {
 		log.Fatal("load position info error:", err)
 	}
 	wg := util.WaitGroupWrapper{}
-	c.SetEventHandler(&MyEventHandler{})
+	h := &MyEventHandler{}
+	c.SetEventHandler(h)
 	wg.Wrap(func() {
 		position.Canal.RunFrom(*pos)
 	})

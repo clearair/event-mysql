@@ -2,12 +2,10 @@ package main
 
 import (
 	"event-mysql/config"
-	"event-mysql/event_mysql"
-	"event-mysql/rabbitmq"
+	"event-mysql/event"
 )
 
-func main() {
+func main()  {
 	config.Init()
-	rabbitmq.Init()
-	event_mysql.Init()
+	event.Init()
 }

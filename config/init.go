@@ -1,33 +1,35 @@
 package config
 
 import (
-	"github.com/micro/go-config"
-	"github.com/micro/go-config/source/file"
+	"fmt"
+	"gopkg.in/yaml.v2"
 	"log"
+	"os"
 )
 
-type Mysql struct {
-	Host     string      `json:"host"`
-	Username string      `json:"username"`
-	Password string `json:"password"`
-}
-type Rabbitmq struct {
-	Url     string      `json:"url"`
+type MysqlInit struct {
+	Host string `yaml: "host"`
+	//Port uint16 `yaml: "port"`
+	Username string `yaml: "username"`
+	Password string `yaml: "password"`
 }
 
-var MysqlCfg Mysql
-var RabbitmqCfg Rabbitmq
+type Config struct {
+	Mysql MysqlInit `yaml: ",mysql"`
+}
 
-func Init() {
-	config.Load(file.NewSource(
-		file.WithPath("config.yaml"),
-	))
+var MysqlCfg Config
 
-	if err := config.Get("mysql").Scan(&MysqlCfg); err != nil {
-		log.Print("load mysql config error:", err)
+func Init()  {
+	file, err := os.Open("config.yaml")
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	if err := config.Get("rabbitmq").Scan(&RabbitmqCfg); err != nil {
-		log.Print("load rabbitmq config error:", err)
-	}
+	defer file.Close()
+
+	yaml.NewDecoder(file).Decode(&MysqlCfg)
+
+	fmt.Print(MysqlCfg)
+
 }
